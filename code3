@@ -1,1 +1,89 @@
+class DisjointSet:
+    def __init__(self, vertices):
+        # Initialize parent and rank for union-find
+        self.parent = {v: v for v in vertices}
+        self.rank = {v: 0 for v in vertices}
+
+    def find(self, item):
+        # Path compression optimization
+        if self.parent[item] != item:
+            self.parent[item] = self.find(self.parent[item])
+        return self.parent[item]
+
+    def union(self, set1, set2):
+        # Union by rank optimization
+        root1 = self.find(set1)
+        root2 = self.find(set2)
+
+        if root1 == root2:
+            return False  # Already in the same set
+
+        if self.rank[root1] < self.rank[root2]:
+            self.parent[root1] = root2
+        elif self.rank[root1] > self.rank[root2]:
+            self.parent[root2] = root1
+        else:
+            self.parent[root2] = root1
+            self.rank[root1] += 1
+        return True
+
+
+class Graph:
+    def __init__(self, vertices):
+        self.vertices = vertices  # List of vertices
+        self.edges = []           # List of edges: (weight, u, v)
+
+    def add_edge(self, u, v, weight):
+        self.edges.append((weight, u, v))
+
+    def kruskal_mst(self):
+        # Sort edges by weight
+        self.edges.sort()
+        ds = DisjointSet(self.vertices)
+
+        mst = []
+        mst_cost = 0
+
+        print("Processing edges in sorted order:")
+        for weight, u, v in self.edges:
+            print(f"Edge ({u}, {v}) with weight {weight}")
+            if ds.union(u, v):
+                print(f" --> Added to MST")
+                mst.append((u, v, weight))
+                mst_cost += weight
+            else:
+                print(f" --> Skipped to avoid cycle")
+
+        return mst, mst_cost
+
+
+# Example usage
+if __name__ == "__main__":
+    # Define vertices
+    vertices = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+    
+    # Initialize graph
+    g = Graph(vertices)
+
+    # Add edges (u, v, weight)
+    g.add_edge('A', 'B', 7)
+    g.add_edge('A', 'D', 5)
+    g.add_edge('B', 'C', 8)
+    g.add_edge('B', 'D', 9)
+    g.add_edge('B', 'E', 7)
+    g.add_edge('C', 'E', 5)
+    g.add_edge('D', 'E', 15)
+    g.add_edge('D', 'F', 6)
+    g.add_edge('E', 'F', 8)
+    g.add_edge('E', 'G', 9)
+    g.add_edge('F', 'G', 11)
+
+    # Run Kruskal's algorithm
+    mst, cost = g.kruskal_mst()
+
+    print("\nMinimum Spanning Tree:")
+    for u, v, weight in mst:
+        print(f"{u} - {v}: {weight}")
+    
+    print(f"\nTotal cost of MST: {cost}")
 
